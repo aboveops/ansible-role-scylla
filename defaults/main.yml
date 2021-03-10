@@ -1,0 +1,70 @@
+---
+scylla_task_prefix: "=== SCYLLA SERVER ==="
+scylla_stage: 1
+# Common settings
+scylla_version: "4.3"
+scylla_apt_keyserver: "keyserver.ubuntu.com"
+scylla_apt_keyid: "5e08fbd8b5d6ec9c"
+scylla_apt_repo_file: "scylla"
+scylla_apt_repo_string: "deb  [arch=amd64] http://downloads.scylladb.com/downloads/scylla/deb/ubuntu/scylladb-{{ scylla_version }} {{ ansible_distribution_release }} multiverse"
+scylla_packages:
+  - scylla
+scylla_user: "scylla"
+scylla_group: "scylla"
+scylla_setup_opts:
+  - "--no-raid-setup"
+  - "--no-coredump-setup"
+  - "--no-io-setup"
+  - "--no-version-check"
+  - "--no-node-exporter"
+  - "--no-fstrim-setup"
+  - "--no-memory-setup"
+# Path settings / Configs
+scylla_path_conf_dir: "/etc/scylla"
+scylla_path_conf_dir_extra: "/etc/scylla.d"
+scylla_path_conf_file: "{{ scylla_path_conf_dir }}/scylla.yaml"
+scylla_path_conf_template: "scylla.yaml.j2"
+scylla_path_conf_cpuset_template: "cpuset.conf.j2"
+scylla_path_conf_cpuset_file: "{{ scylla_path_conf_dir_extra }}/cpuset.conf"
+scylla_path_conf_devmode_template: "dev-mode.conf.j2"
+scylla_path_conf_devmode_file: "{{ scylla_path_conf_dir_extra }}/dev-mode.conf"
+scylla_path_conf_housekeeping_template: "housekeeping.cfg.j2"
+scylla_path_conf_housekeeping_file: "{{ scylla_path_conf_dir_extra }}/housekeeping.cfg"
+scylla_path_conf_io_template: "io.conf.j2"
+scylla_path_conf_io_file: "{{ scylla_path_conf_dir_extra }}/io.conf"
+scylla_path_conf_io_props_template: "io_properties.yaml.j2"
+scylla_path_conf_io_props_file: "{{ scylla_path_conf_dir_extra }}/io_properties.yaml"
+scylla_path_conf_io_props_install: true
+# Path settings / Data
+scylla_path_base: "/srv/scylla"
+scylla_path_data: "{{ scylla_path_base }}/data"
+scylla_path_logs: "{{ scylla_path_base }}/commitlog"
+# Systemd settings
+scylla_systemd_unit: "scylla-server"
+scylla_systemd_state: "started"
+scylla_systemd_enabled: "yes"
+scylla_systemd_masked: "no"
+# Scylla settings
+scylla_conf_cluster_name: "test-cluster"
+scylla_conf_num_tokens: '256'
+scylla_conf_data_file_directories:
+  - "{{ scylla_path_data }}"
+scylla_conf_commitlog_directory: "{{ scylla_path_logs }}"
+scylla_conf_seeds: "127.0.0.1"
+scylla_conf_listen_address: "127.0.0.1"
+scylla_conf_broadcast_address: "127.0.0.1"
+scylla_conf_native_transport_port: '9042'
+# Example for io_properties.yaml if you keep '--no-io-setup' in scylla_setup_opts
+# scylla_disks_list:
+# disks:
+#   - mountpoint: /
+#     read_iops: 200
+#     read_bandwidth: 100000000
+#     write_iops: 200
+#     write_bandwidth: 100000000
+#   - mountpoint: /var/lib/scylla
+#     read_iops: 200
+#     read_bandwidth: 100000000
+#     write_iops: 200
+#     write_bandwidth: 100000000
+...

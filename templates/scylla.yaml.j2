@@ -1,0 +1,11 @@
+cluster_name: '{{ scylla_conf_cluster_name }}'
+num_tokens: {{ scylla_conf_num_tokens }}
+data_file_directories: {{ scylla_conf_data_file_directories }}
+commitlog_directory: {{ scylla_conf_commitlog_directory }}
+seed_provider:
+  - class_name: org.apache.cassandra.locator.SimpleSeedProvider
+    parameters:
+      - seeds: "{{ scylla_conf_seeds }}"
+listen_address: {{ scylla_conf_listen_address }}
+rpc_address: {{ scylla_conf_broadcast_address }}
+native_transport_port: {{ scylla_conf_native_transport_port }}

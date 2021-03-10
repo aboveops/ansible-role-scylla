@@ -1,0 +1,68 @@
+---
+- name: "{{ scylla_task_prefix }} Running stage 1"
+  block:
+    - name: "{{ scylla_task_prefix }} Add APT Key"
+      apt_key:
+        keyserver: "{{ scylla_apt_keyserver }}"
+        id: "{{ scylla_apt_keyid }}"
+    - name: "{{ scylla_task_prefix }} Add APT repository"
+      apt_repository:
+        repo: "{{ scylla_apt_repo_string }}"
+        state: present
+        filename: "{{ scylla_apt_repo_file }}"
+    - name: "{{ scylla_task_prefix }} Install ScyllaDB server"
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop: "{{ scylla_packages }}"
+    - name: "{{ scylla_task_prefix }} Create configuration directory"
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ scylla_path_conf_dir }}"
+        - "{{ scylla_path_conf_dir_extra }}"
+    - name: "{{ scylla_task_prefix }} Create data directories"
+      file:
+        path: "{{ item }}"
+        owner: "{{ scylla_user }}"
+        group: "{{ scylla_group }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "{{ scylla_path_base }}"
+        - "{{ scylla_path_data }}"
+        - "{{ scylla_path_logs }}"
+    - name: "{{ scylla_task_prefix }} Put configuration file"
+      template:
+        src: "{{ scylla_path_conf_template }}"
+        dest: "{{ scylla_path_conf_file }}"
+        mode: '0644'
+    - name: "{{ scylla_task_prefix }} Run scylla_setup script"
+      shell: "scylla_setup {% for setup_opt in scylla_setup_opts %}{{ setup_opt }} {% endfor %}"
+      register: scylla_setup_output
+  when: scylla_stage|int in [1, 4]
+- name: "{{ scylla_task_prefix }} Put IO configuration"
+  block:
+    - name: "{{ scylla_task_prefix }} Put io.conf"
+      template:
+        src: "{{ scylla_path_conf_io_template }}"
+        dest: "{{ scylla_path_conf_io_file }}"
+        mode: '0644'
+    - name: "{{ scylla_task_prefix }} Put io_properties.yaml"
+      template:
+        src: "{{ scylla_path_conf_io_props_template }}"
+        dest: "{{ scylla_path_conf_io_props_file }}"
+        mode: '0644'
+      when: scylla_path_conf_io_props_install
+  when: scylla_stage|int in [2, 4]
+- name: "{{ scylla_task_prefix }} Control Scylla Server systemd unit"
+  systemd:
+    name: "{{ scylla_systemd_unit }}"
+    masked: "{{ scylla_systemd_masked }}"
+    enabled: "{{ scylla_systemd_enabled }}"
+    state: "{{ scylla_systemd_state }}"
+  when: scylla_stage|int >= 3
+  throttle: 1
+...
